@@ -78,7 +78,8 @@ import { ownershipOf } from './world-utils';
             <tt-territory-armies-list
               [armies]="d.armies"
               [canManage]="own() === 'mine'"
-              (recruitClicked)="openRecruit(d.tile)" />
+              (recruitClicked)="openRecruit(d.tile)"
+              (changed)="reload()" />
           </div>
           <tt-territory-detail-panel
             [tile]="d.tile"

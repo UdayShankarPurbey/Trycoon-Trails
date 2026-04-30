@@ -26,11 +26,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/world/territory-detail'),
       },
       { path: 'businesses', loadComponent: () => import('./features/businesses/businesses') },
-      {
-        path: 'army',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'Army', description: 'Section F7 — recruit / disband / strength.' },
-      },
+      { path: 'army', loadComponent: () => import('./features/army/army') },
       {
         path: 'missions',
         loadComponent: () => import('./features/placeholder/placeholder'),

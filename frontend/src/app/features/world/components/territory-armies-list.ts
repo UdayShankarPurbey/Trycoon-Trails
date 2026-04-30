@@ -1,15 +1,18 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
 import { LucideAngularModule, Swords } from 'lucide-angular';
 import { ArmyGroup } from '../../../core/types';
-import { BadgeComponent } from '../../../shared/ui/badge/badge';
 import { ButtonComponent } from '../../../shared/ui/button/button';
 import { CardComponent } from '../../../shared/ui/card/card';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state';
+import { ArmyRowComponent } from '../../army/components/army-row';
+import { DisbandDialogComponent } from '../../army/dialogs/disband-dialog';
 
 @Component({
   selector: 'tt-territory-armies-list',
   imports: [
-    CardComponent, EmptyStateComponent, BadgeComponent, ButtonComponent, LucideAngularModule,
+    CardComponent, EmptyStateComponent, ButtonComponent, LucideAngularModule,
+    ArmyRowComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -27,18 +30,11 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state'
       } @else {
         <ul class="space-y-2">
           @for (a of armies(); track a.id) {
-            <li class="flex items-center justify-between p-2.5 rounded-md border border-zinc-800 text-sm">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <p class="font-medium">{{ a.unit_type.name }}</p>
-                  <tt-badge variant="default">{{ a.unit_type.category }}</tt-badge>
-                </div>
-                <p class="text-[11px] text-zinc-500">
-                  atk {{ a.unit_type.attack }} · def {{ a.unit_type.defense }} · upkeep {{ a.upkeep_per_min_total }}c/min
-                </p>
-              </div>
-              <span class="text-base font-semibold tabular-nums">×{{ a.count }}</span>
-            </li>
+            <tt-army-row
+              [army]="a"
+              [canManage]="canManage()"
+              [loadingDisband]="disbandingId() === a.id"
+              (disbandTriggered)="openDisband(a)" />
           }
         </ul>
       }
@@ -46,10 +42,33 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state'
   `,
 })
 export class TerritoryArmiesListComponent {
+  private readonly dialog = inject(Dialog);
+
   readonly armies = input.required<ArmyGroup[]>();
   readonly canManage = input<boolean>(false);
 
   readonly recruitClicked = output<void>();
+  readonly changed = output<void>();
 
   protected readonly Swords = Swords;
+  protected readonly disbandingId = signal<string | null>(null);
+
+  protected openDisband(army: ArmyGroup): void {
+    if (this.disbandingId()) return;
+    this.disbandingId.set(army.id);
+    const ref = this.dialog.open(DisbandDialogComponent, {
+      data: {
+        armyId: army.id,
+        unitName: army.unit_type.name,
+        manpowerCost: army.unit_type.manpower_cost,
+        currentCount: army.count,
+      },
+      hasBackdrop: true,
+      backdropClass: 'bg-black/60',
+    });
+    ref.closed.subscribe((disbanded) => {
+      this.disbandingId.set(null);
+      if (disbanded) this.changed.emit();
+    });
+  }
 }
