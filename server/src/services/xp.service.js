@@ -1,5 +1,6 @@
 import { Level } from "../models/index.js";
 import { credit } from "./economy.service.js";
+import { recordEvent } from "./mission.service.js";
 import { logger } from "../utils/logger.js";
 
 const getOrderedLevels = async () => {
@@ -37,6 +38,10 @@ export const awardXp = async (user, amount, reason, { txn = null } = {}) => {
       unlocks: next.unlocks,
     });
     logger.info(`User ${user.username} leveled up to ${next.level} (${next.title})`);
+  }
+
+  if (levelUps.length > 0) {
+    await recordEvent(user, "reach_level", user.level, { mode: "max", txn });
   }
 
   return { user, levelUps };

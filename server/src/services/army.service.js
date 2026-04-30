@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { sequelize } from "../config/db.js";
 import { credit, debit } from "./economy.service.js";
 import { redis } from "../config/redis.js";
+import { recordEvent } from "./mission.service.js";
 
 const MANPOWER_REGEN_KEY = (userId) => `mp:last:${userId}`;
 const MANPOWER_PER_HOUR = 10;
@@ -86,6 +87,8 @@ export const recruitUnits = async (user, { territoryId, unitTypeId, unitCode, co
       army.count = Number(army.count) + n;
       await army.save({ transaction: txn });
     }
+
+    await recordEvent(user, "recruit_units", n, { txn });
 
     return { army, unitType, territory, recruited: n, coinCost: totalCoinCost, manpowerCost: totalManpowerCost };
   });

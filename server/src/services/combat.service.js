@@ -12,6 +12,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { credit, debit } from "./economy.service.js";
 import { awardXp } from "./xp.service.js";
 import { spawnStarterTerritory } from "./world.service.js";
+import { recordEvent } from "./mission.service.js";
 import { logger } from "../utils/logger.js";
 
 const SCOUT_LEVEL = 6;
@@ -315,6 +316,8 @@ export const attackTerritory = async (user, { territoryId, units }) => {
         await debit(defender, "reputation", Math.abs(repChange.defender), "battle_loss", { txn, allowNegative: true });
       }
       await awardXp(user, captured ? 100 : 50, "battle_attack_win", { txn });
+      await recordEvent(user, "win_battle", 1, { txn });
+      if (captured) await recordEvent(user, "capture_territory", 1, { txn });
     } else {
       repChange.attacker = -5;
       repChange.defender = 5;

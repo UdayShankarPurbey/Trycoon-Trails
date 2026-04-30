@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { sequelize } from "../config/db.js";
 import { debit } from "./economy.service.js";
 import { collectForUser } from "./income.service.js";
+import { recordEvent } from "./mission.service.js";
 
 const findOwnedTerritory = async (userId, territoryId, { txn = null } = {}) => {
   const territory = await Territory.findByPk(territoryId, { transaction: txn });
@@ -47,6 +48,8 @@ export const buyBusiness = async (user, { territoryId, typeId, typeCode }) => {
       { transaction: txn }
     );
 
+    await recordEvent(user, "buy_business", 1, { txn });
+
     return { business, type, cost, territory };
   });
 };
@@ -75,6 +78,8 @@ export const upgradeBusiness = async (user, businessId) => {
 
     business.level += 1;
     await business.save({ transaction: txn });
+
+    await recordEvent(user, "upgrade_business", 1, { txn });
 
     return { business, cost };
   });
