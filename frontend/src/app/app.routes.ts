@@ -20,11 +20,7 @@ export const routes: Routes = [
     loadComponent: () => import('./layouts/app-layout/app-layout').then((m) => m.AppLayoutComponent),
     children: [
       { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard') },
-      {
-        path: 'world',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'World Map', description: 'Section F4 — 50×50 grid view with terrain.' },
-      },
+      { path: 'world', loadComponent: () => import('./features/world/world') },
       {
         path: 'businesses',
         loadComponent: () => import('./features/placeholder/placeholder'),
