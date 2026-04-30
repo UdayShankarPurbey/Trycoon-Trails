@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { forkJoin, map } from 'rxjs';
-import { LucideAngularModule, RefreshCw } from 'lucide-angular';
+import { Router } from '@angular/router';
+import { LucideAngularModule, RefreshCw, ExternalLink } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
 import { TerritoryService } from '../../core/services/territory.service';
 import { Terrain, Territory } from '../../core/types';
@@ -75,10 +76,11 @@ import { WORLD_PAGE_SIZE, WORLD_TOTAL, WorldFilter } from './world-utils';
         <tt-territory-detail-panel
           [tile]="selected()"
           [currentUserId]="user()?.id ?? null">
-          @if (selected() && (selected()!.owner_id === user()?.id)) {
-            <p class="text-[11px] text-zinc-500 italic">
-              Tile management actions arrive in F5 (Territory Detail).
-            </p>
+          @if (selected(); as s) {
+            <tt-button size="sm" [fullWidth]="true" (clicked)="openDetail(s)">
+              <lucide-angular [img]="ExternalLink" [size]="14" />
+              Open territory
+            </tt-button>
           }
         </tt-territory-detail-panel>
       </div>
@@ -88,6 +90,7 @@ import { WORLD_PAGE_SIZE, WORLD_TOTAL, WorldFilter } from './world-utils';
 export default class WorldComponent {
   private readonly territoryService = inject(TerritoryService);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly user = this.auth.user;
 
@@ -96,6 +99,11 @@ export default class WorldComponent {
   protected readonly selected = signal<Territory | null>(null);
 
   protected readonly RefreshCw = RefreshCw;
+  protected readonly ExternalLink = ExternalLink;
+
+  protected openDetail(tile: Territory): void {
+    void this.router.navigate(['/world', tile.id]);
+  }
 
   protected readonly resource = rxResource({
     stream: () => {

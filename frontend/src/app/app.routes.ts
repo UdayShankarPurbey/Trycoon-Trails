@@ -22,6 +22,10 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard') },
       { path: 'world', loadComponent: () => import('./features/world/world') },
       {
+        path: 'world/:id',
+        loadComponent: () => import('./features/world/territory-detail'),
+      },
+      {
         path: 'businesses',
         loadComponent: () => import('./features/placeholder/placeholder'),
         data: { title: 'Businesses', description: 'Section F6 — buy / upgrade / collect.' },
