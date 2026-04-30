@@ -7,6 +7,7 @@ import { businessRoutes } from "./business.routes.js";
 import { armyRoutes } from "./army.routes.js";
 import { battleRoutes } from "./battle.routes.js";
 import { missionRoutes } from "./mission.routes.js";
+import { adminRoutes } from "./admin.routes.js";
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/businesses", businessRoutes);
 router.use("/army", armyRoutes);
 router.use("/battles", battleRoutes);
 router.use("/missions", missionRoutes);
+router.use("/admin", adminRoutes);
 
 export { router as apiV1Router };
