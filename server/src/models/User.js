@@ -54,6 +54,8 @@ User.init(
     avatar_public_id: { type: DataTypes.STRING(255), allowNull: true },
     shield_until: { type: DataTypes.DATE, allowNull: true },
     last_active_at: { type: DataTypes.DATE, allowNull: true },
+    last_daily_claim_at: { type: DataTypes.DATE, allowNull: true },
+    daily_streak: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 0 },
     is_banned: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     banned_reason: { type: DataTypes.STRING(255), allowNull: true },
   },
@@ -63,11 +65,6 @@ User.init(
     tableName: "users",
     timestamps: true,
     underscored: true,
-    indexes: [
-      { unique: true, fields: ["username"] },
-      { unique: true, fields: ["email"] },
-      { fields: ["role"] },
-    ],
   }
 );
 
