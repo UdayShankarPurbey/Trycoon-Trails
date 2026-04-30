@@ -9,6 +9,7 @@ import {
 import { claim as claimDailyReward } from "../controllers/dailyReward.controller.js";
 import { listMyTransactions } from "../controllers/transaction.controller.js";
 import { getMyTerritories } from "../controllers/world.controller.js";
+import { myBusinesses } from "../controllers/business.controller.js";
 
 const router = Router();
 
@@ -117,5 +118,17 @@ router.get("/me/transactions", listMyTransactions);
  *       401: { $ref: '#/components/responses/Unauthorized' }
  */
 router.get("/me/territories", getMyTerritories);
+
+/**
+ * @openapi
+ * /api/v1/users/me/businesses:
+ *   get:
+ *     tags: [User, Business]
+ *     summary: List all my businesses with current income / upgrade cost
+ *     responses:
+ *       200: { description: My businesses with income breakdown }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ */
+router.get("/me/businesses", myBusinesses);
 
 export { router as userRoutes };

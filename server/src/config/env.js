@@ -90,4 +90,9 @@ export const env = Object.freeze({
     manpower: toInt(process.env.STARTER_MANPOWER, 100),
     shieldDays: toInt(process.env.SHIELD_DAYS, 7),
   },
+
+  incomeTick: {
+    enabled: process.env.INCOME_TICK_ENABLED !== "false",
+    cron: process.env.INCOME_TICK_CRON || "* * * * *",
+  },
 });

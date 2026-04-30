@@ -8,6 +8,8 @@ import { syncDB } from "./models/index.js";
 import { seedAdmin } from "./db/seedAdmin.js";
 import { seedLevels } from "./db/seedLevels.js";
 import { seedWorld } from "./db/seedWorld.js";
+import { seedBusinessTypes } from "./db/seedBusinessTypes.js";
+import { startIncomeTick, stopIncomeTick } from "./jobs/incomeTick.job.js";
 import { logger } from "./utils/logger.js";
 
 let server;
@@ -18,6 +20,7 @@ const start = async () => {
     await connectRedis();
     await syncDB({ alter: false });
     await seedLevels();
+    await seedBusinessTypes();
     await seedWorld();
     await seedAdmin();
 
@@ -25,6 +28,7 @@ const start = async () => {
 
     server.listen(env.port, () => {
       logger.info(`Trycoon Trails API listening on http://localhost:${env.port} [${env.nodeEnv}]`);
+      startIncomeTick();
     });
   } catch (err) {
     logger.error(`Failed to start server: ${err.message}`);
@@ -34,6 +38,8 @@ const start = async () => {
 
 const shutdown = async (signal) => {
   logger.info(`${signal} received — shutting down gracefully...`);
+
+  await stopIncomeTick();
 
   if (server) {
     await new Promise((resolve) => server.close(resolve));
