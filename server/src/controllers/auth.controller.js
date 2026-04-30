@@ -43,7 +43,7 @@ export const signup = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body || {};
   validateSignup({ username, email, password });
 
-  const user = await signupService({ username, email, password });
+  const { user, territory } = await signupService({ username, email, password });
   const { accessToken, refreshToken } = await issueTokens(user);
 
   setAuthCookies(res, accessToken, refreshToken);
@@ -52,7 +52,7 @@ export const signup = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         201,
-        { user: user.toSafeJSON(), accessToken, refreshToken },
+        { user: user.toSafeJSON(), territory, accessToken, refreshToken },
         "Signup successful"
       )
     );

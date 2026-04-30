@@ -8,6 +8,7 @@ import {
 } from "../controllers/user.controller.js";
 import { claim as claimDailyReward } from "../controllers/dailyReward.controller.js";
 import { listMyTransactions } from "../controllers/transaction.controller.js";
+import { getMyTerritories } from "../controllers/world.controller.js";
 
 const router = Router();
 
@@ -104,5 +105,17 @@ router.post("/me/daily-reward", claimDailyReward);
  *       401: { $ref: '#/components/responses/Unauthorized' }
  */
 router.get("/me/transactions", listMyTransactions);
+
+/**
+ * @openapi
+ * /api/v1/users/me/territories:
+ *   get:
+ *     tags: [User, World]
+ *     summary: List all territories owned by me
+ *     responses:
+ *       200: { description: My territories }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ */
+router.get("/me/territories", getMyTerritories);
 
 export { router as userRoutes };

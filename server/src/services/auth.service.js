@@ -12,6 +12,8 @@ import {
 import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
+import { sequelize } from "../config/db.js";
+import { spawnStarterTerritory } from "./world.service.js";
 
 const REFRESH_KEY = (userId, jti) => `refresh:${userId}:${jti}`;
 
@@ -49,23 +51,30 @@ export const signupService = async ({ username, email, password }) => {
   const shieldDays = env.starter.shieldDays;
   const shield_until = new Date(Date.now() + shieldDays * 24 * 60 * 60 * 1000);
 
-  const user = await User.create({
-    username,
-    email,
-    password_hash,
-    role: "user",
-    level: 1,
-    xp: 0,
-    coins: env.starter.coins,
-    gems: env.starter.gems,
-    manpower: env.starter.manpower,
-    reputation: 0,
-    shield_until,
-    last_active_at: new Date(),
+  const { user, territory } = await sequelize.transaction(async (txn) => {
+    const u = await User.create(
+      {
+        username,
+        email,
+        password_hash,
+        role: "user",
+        level: 1,
+        xp: 0,
+        coins: env.starter.coins,
+        gems: env.starter.gems,
+        manpower: env.starter.manpower,
+        reputation: 0,
+        shield_until,
+        last_active_at: new Date(),
+      },
+      { transaction: txn }
+    );
+    const t = await spawnStarterTerritory(u, { txn });
+    return { user: u, territory: t };
   });
 
-  logger.info(`New user signup: ${user.username} (${user.id})`);
-  return user;
+  logger.info(`New user signup: ${user.username} (${user.id}) at tile (${territory.x},${territory.y})`);
+  return { user, territory };
 };
 
 export const loginService = async ({ identifier, password }) => {
