@@ -10,6 +10,7 @@ import { claim as claimDailyReward } from "../controllers/dailyReward.controller
 import { listMyTransactions } from "../controllers/transaction.controller.js";
 import { getMyTerritories } from "../controllers/world.controller.js";
 import { myBusinesses } from "../controllers/business.controller.js";
+import { myArmy } from "../controllers/army.controller.js";
 
 const router = Router();
 
@@ -130,5 +131,17 @@ router.get("/me/territories", getMyTerritories);
  *       401: { $ref: '#/components/responses/Unauthorized' }
  */
 router.get("/me/businesses", myBusinesses);
+
+/**
+ * @openapi
+ * /api/v1/users/me/army:
+ *   get:
+ *     tags: [User, Army]
+ *     summary: Summary of my army (per-territory groups, manpower, total strength)
+ *     responses:
+ *       200: { description: My army }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ */
+router.get("/me/army", myArmy);
 
 export { router as userRoutes };

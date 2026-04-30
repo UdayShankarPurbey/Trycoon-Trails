@@ -18,10 +18,12 @@ const tick = async () => {
 
   const start = Date.now();
   try {
-    const { usersProcessed, totalCredited } = await runIncomeTick();
+    const { usersProcessed, totalCredited, totalUpkeepPaid, totalManpowerRegen } = await runIncomeTick();
     const ms = Date.now() - start;
     if (usersProcessed > 0) {
-      logger.info(`Income tick: ${usersProcessed} users earned ${totalCredited} coins (${ms}ms)`);
+      logger.info(
+        `Income tick: ${usersProcessed} users | +${totalCredited} coins | -${totalUpkeepPaid} upkeep | +${totalManpowerRegen} manpower (${ms}ms)`
+      );
     } else {
       logger.debug(`Income tick: idle (${ms}ms)`);
     }

@@ -1,7 +1,8 @@
 import { Op } from "sequelize";
 import { Business, BusinessType, Territory, User } from "../models/index.js";
 import { sequelize } from "../config/db.js";
-import { credit } from "./economy.service.js";
+import { credit, debit } from "./economy.service.js";
+import { regenManpower, computeUserUpkeepPerMin } from "./army.service.js";
 import { logger } from "../utils/logger.js";
 
 const HOURS = (n) => n * 60 * 60 * 1000;
@@ -102,24 +103,49 @@ export const runIncomeTick = async () => {
   });
 
   let totalCredited = 0;
+  let totalUpkeepPaid = 0;
+  let totalManpowerRegen = 0;
   let usersProcessed = 0;
 
   for (const { owner_id } of ownerIds) {
     if (!owner_id) continue;
     try {
-      const result = await sequelize.transaction(async (txn) =>
-        collectForUser(owner_id, { txn })
-      );
-      if (result.earned > 0) {
+      const summary = await sequelize.transaction(async (txn) => {
+        const user = await User.findByPk(owner_id, { transaction: txn });
+        if (!user) return { earned: 0, upkeep: 0, regen: 0 };
+
+        const regenResult = await regenManpower(user, { txn });
+        const incomeResult = await collectForUser(owner_id, { txn });
+        const upkeepDue = await computeUserUpkeepPerMin(owner_id, { txn });
+        let upkeepPaid = 0;
+        if (upkeepDue > 0) {
+          await user.reload({ transaction: txn });
+          upkeepPaid = Math.min(upkeepDue, Number(user.coins));
+          if (upkeepPaid > 0) {
+            await debit(user, "coins", upkeepPaid, "upkeep_tick", {
+              txn,
+              metadata: { full: upkeepDue, paid: upkeepPaid },
+            });
+          }
+        }
+        return {
+          earned: incomeResult.earned,
+          upkeep: upkeepPaid,
+          regen: regenResult.regenerated,
+        };
+      });
+      if (summary.earned > 0 || summary.upkeep > 0 || summary.regen > 0) {
         usersProcessed += 1;
-        totalCredited += result.earned;
+        totalCredited += summary.earned;
+        totalUpkeepPaid += summary.upkeep;
+        totalManpowerRegen += summary.regen;
       }
     } catch (err) {
       logger.error(`Income tick failed for user ${owner_id}: ${err.message}`);
     }
   }
 
-  return { usersProcessed, totalCredited };
+  return { usersProcessed, totalCredited, totalUpkeepPaid, totalManpowerRegen };
 };
 
 export { businessFullInclude };

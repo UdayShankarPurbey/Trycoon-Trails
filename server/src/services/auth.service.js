@@ -14,6 +14,7 @@ import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
 import { sequelize } from "../config/db.js";
 import { spawnStarterTerritory } from "./world.service.js";
+import { initManpowerRegen } from "./army.service.js";
 
 const REFRESH_KEY = (userId, jti) => `refresh:${userId}:${jti}`;
 
@@ -73,6 +74,7 @@ export const signupService = async ({ username, email, password }) => {
     return { user: u, territory: t };
   });
 
+  await initManpowerRegen(user.id);
   logger.info(`New user signup: ${user.username} (${user.id}) at tile (${territory.x},${territory.y})`);
   return { user, territory };
 };

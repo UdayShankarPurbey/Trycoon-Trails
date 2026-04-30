@@ -9,6 +9,7 @@ import { seedAdmin } from "./db/seedAdmin.js";
 import { seedLevels } from "./db/seedLevels.js";
 import { seedWorld } from "./db/seedWorld.js";
 import { seedBusinessTypes } from "./db/seedBusinessTypes.js";
+import { seedUnitTypes } from "./db/seedUnitTypes.js";
 import { startIncomeTick, stopIncomeTick } from "./jobs/incomeTick.job.js";
 import { logger } from "./utils/logger.js";
 
@@ -21,6 +22,7 @@ const start = async () => {
     await syncDB({ alter: false });
     await seedLevels();
     await seedBusinessTypes();
+    await seedUnitTypes();
     await seedWorld();
     await seedAdmin();
 

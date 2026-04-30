@@ -5,6 +5,8 @@ import { Transaction } from "./Transaction.js";
 import { Territory } from "./Territory.js";
 import { BusinessType } from "./BusinessType.js";
 import { Business } from "./Business.js";
+import { UnitType } from "./UnitType.js";
+import { Army } from "./Army.js";
 import { logger } from "../utils/logger.js";
 
 User.hasMany(Transaction, { foreignKey: "user_id", as: "transactions", onDelete: "CASCADE" });
@@ -19,11 +21,30 @@ Business.belongsTo(Territory, { foreignKey: "territory_id", as: "territory" });
 BusinessType.hasMany(Business, { foreignKey: "type_id", as: "instances" });
 Business.belongsTo(BusinessType, { foreignKey: "type_id", as: "type" });
 
-export const models = { User, Level, Transaction, Territory, BusinessType, Business };
+User.hasMany(Army, { foreignKey: "owner_id", as: "armies", onDelete: "CASCADE" });
+Army.belongsTo(User, { foreignKey: "owner_id", as: "owner" });
+
+Territory.hasMany(Army, { foreignKey: "territory_id", as: "armies", onDelete: "CASCADE" });
+Army.belongsTo(Territory, { foreignKey: "territory_id", as: "territory" });
+
+UnitType.hasMany(Army, { foreignKey: "unit_type_id", as: "instances" });
+Army.belongsTo(UnitType, { foreignKey: "unit_type_id", as: "unit_type" });
+
+export const models = { User, Level, Transaction, Territory, BusinessType, Business, UnitType, Army };
 
 export const syncDB = async ({ alter = false, force = false } = {}) => {
   await sequelize.sync({ alter, force });
   logger.info(`DB sync complete (alter=${alter}, force=${force})`);
 };
 
-export { sequelize, User, Level, Transaction, Territory, BusinessType, Business };
+export {
+  sequelize,
+  User,
+  Level,
+  Transaction,
+  Territory,
+  BusinessType,
+  Business,
+  UnitType,
+  Army,
+};
