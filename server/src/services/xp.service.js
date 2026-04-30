@@ -1,6 +1,8 @@
 import { Level } from "../models/index.js";
 import { credit } from "./economy.service.js";
 import { recordEvent } from "./mission.service.js";
+import { updateScore } from "./leaderboard.service.js";
+import { createNotification } from "./notification.service.js";
 import { logger } from "../utils/logger.js";
 
 const getOrderedLevels = async () => {
@@ -42,6 +44,19 @@ export const awardXp = async (user, amount, reason, { txn = null } = {}) => {
 
   if (levelUps.length > 0) {
     await recordEvent(user, "reach_level", user.level, { mode: "max", txn });
+    updateScore(user.id, "level", user.level).catch(() => {});
+    for (const lu of levelUps) {
+      await createNotification(
+        {
+          userId: user.id,
+          type: "level_up",
+          title: `Leveled up to ${lu.level}: ${lu.title}`,
+          body: `You reached level ${lu.level} (${lu.title}). Rewards: ${lu.reward_coins} coins, ${lu.reward_gems} gems.`,
+          data: { level: lu.level, title: lu.title, unlocks: lu.unlocks },
+        },
+        { txn }
+      );
+    }
   }
 
   return { user, levelUps };

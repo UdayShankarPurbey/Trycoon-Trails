@@ -1,5 +1,6 @@
 import { Transaction } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.js";
+import { updateScore } from "./leaderboard.service.js";
 
 const BALANCE_FIELD = {
   coins: "coins",
@@ -9,6 +10,7 @@ const BALANCE_FIELD = {
   xp: "xp",
 };
 
+const LEADERBOARD_KINDS = new Set(["coins", "gems", "xp", "reputation"]);
 const isUnsigned = (kind) => kind !== "reputation";
 
 export const credit = async (user, kind, amount, reason, { metadata = null, txn = null } = {}) => {
@@ -31,6 +33,10 @@ export const credit = async (user, kind, amount, reason, { metadata = null, txn 
     },
     { transaction: txn }
   );
+
+  if (LEADERBOARD_KINDS.has(kind)) {
+    updateScore(user.id, kind, user[field]).catch(() => {});
+  }
 
   return user;
 };
@@ -59,6 +65,10 @@ export const debit = async (user, kind, amount, reason, { metadata = null, txn =
     },
     { transaction: txn }
   );
+
+  if (LEADERBOARD_KINDS.has(kind)) {
+    updateScore(user.id, kind, user[field]).catch(() => {});
+  }
 
   return user;
 };

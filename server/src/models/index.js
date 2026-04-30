@@ -11,6 +11,7 @@ import { Battle } from "./Battle.js";
 import { Mission } from "./Mission.js";
 import { UserMission } from "./UserMission.js";
 import { AuditLog } from "./AuditLog.js";
+import { Notification } from "./Notification.js";
 import { logger } from "../utils/logger.js";
 
 User.hasMany(Transaction, { foreignKey: "user_id", as: "transactions", onDelete: "CASCADE" });
@@ -51,9 +52,12 @@ UserMission.belongsTo(Mission, { foreignKey: "mission_id", as: "mission" });
 User.hasMany(AuditLog, { foreignKey: "admin_id", as: "auditEntries" });
 AuditLog.belongsTo(User, { foreignKey: "admin_id", as: "admin" });
 
+User.hasMany(Notification, { foreignKey: "user_id", as: "notifications", onDelete: "CASCADE" });
+Notification.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
 export const models = {
   User, Level, Transaction, Territory, BusinessType, Business,
-  UnitType, Army, Battle, Mission, UserMission, AuditLog,
+  UnitType, Army, Battle, Mission, UserMission, AuditLog, Notification,
 };
 
 export const syncDB = async ({ alter = false, force = false } = {}) => {
@@ -63,5 +67,5 @@ export const syncDB = async ({ alter = false, force = false } = {}) => {
 
 export {
   sequelize, User, Level, Transaction, Territory, BusinessType, Business,
-  UnitType, Army, Battle, Mission, UserMission, AuditLog,
+  UnitType, Army, Battle, Mission, UserMission, AuditLog, Notification,
 };

@@ -13,6 +13,8 @@ import { credit, debit } from "./economy.service.js";
 import { awardXp } from "./xp.service.js";
 import { spawnStarterTerritory } from "./world.service.js";
 import { recordEvent } from "./mission.service.js";
+import { incrementScore } from "./leaderboard.service.js";
+import { createNotification } from "./notification.service.js";
 import { logger } from "../utils/logger.js";
 
 const SCOUT_LEVEL = 6;
@@ -318,6 +320,31 @@ export const attackTerritory = async (user, { territoryId, units }) => {
       await awardXp(user, captured ? 100 : 50, "battle_attack_win", { txn });
       await recordEvent(user, "win_battle", 1, { txn });
       if (captured) await recordEvent(user, "capture_territory", 1, { txn });
+      incrementScore(user.id, "battles_won", 1).catch(() => {});
+
+      if (defender) {
+        await createNotification(
+          {
+            userId: defender.id,
+            type: captured ? "territory_captured" : "battle_attacked",
+            title: captured
+              ? `Your territory at (${territory.x},${territory.y}) was captured!`
+              : `${user.username} raided your territory at (${territory.x},${territory.y})`,
+            body: captured
+              ? `${user.username} (L${user.level}) defeated your defenders and captured the territory.`
+              : `${user.username} (L${user.level}) defeated your defenders. The territory is in cooldown for 24h.`,
+            data: {
+              territory_id: territory.id,
+              attacker_id: user.id,
+              attacker_username: user.username,
+              attacker_strength: attackerStrength,
+              defender_strength: defenderStrength,
+              captured,
+            },
+          },
+          { txn }
+        );
+      }
     } else {
       repChange.attacker = -5;
       repChange.defender = 5;
@@ -325,6 +352,23 @@ export const attackTerritory = async (user, { territoryId, units }) => {
       if (defender) {
         await credit(defender, "reputation", repChange.defender, "battle_defense_win", { txn });
         await awardXp(defender, 25, "battle_defense_win", { txn });
+        incrementScore(defender.id, "battles_won", 1).catch(() => {});
+        await createNotification(
+          {
+            userId: defender.id,
+            type: "battle_defended",
+            title: `You repelled an attack at (${territory.x},${territory.y})!`,
+            body: `${user.username} (L${user.level}) attacked but you held your ground. +25 XP.`,
+            data: {
+              territory_id: territory.id,
+              attacker_id: user.id,
+              attacker_username: user.username,
+              attacker_strength: attackerStrength,
+              defender_strength: defenderStrength,
+            },
+          },
+          { txn }
+        );
       }
     }
 

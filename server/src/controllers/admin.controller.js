@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import {
   User, Level, BusinessType, UnitType, Mission, Territory, AuditLog,
+  Business, Army, Battle, Notification,
 } from "../models/index.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -295,6 +296,80 @@ export const updatePlayerRole = asyncHandler(async (req, res) => {
   const user = await setPlayerRole(req.user, req.params.id, role);
   await audit(req, "set_role", "users", user.id, { role });
   res.status(200).json(new ApiResponse(200, safePlayerJSON(user), `Role set to ${role}`));
+});
+
+// ============ STATS ============
+
+export const stats = asyncHandler(async (_req, res) => {
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [
+    totalUsers, totalAdmins, bannedUsers, activeToday, activeWeek,
+    totalTerritories, ownedTerritories,
+    totalBusinesses, totalArmies, totalBattles, capturedBattles,
+    totalMissions, activeMissions, totalNotifications, unreadNotifications,
+  ] = await Promise.all([
+    User.count(),
+    User.count({ where: { role: "admin" } }),
+    User.count({ where: { is_banned: true } }),
+    User.count({ where: { last_active_at: { [Op.gte]: oneDayAgo } } }),
+    User.count({ where: { last_active_at: { [Op.gte]: sevenDaysAgo } } }),
+    Territory.count(),
+    Territory.count({ where: { owner_id: { [Op.ne]: null } } }),
+    Business.count(),
+    Army.sum("count"),
+    Battle.count(),
+    Battle.count({ where: { territory_captured: true } }),
+    Mission.count(),
+    Mission.count({ where: { is_active: true } }),
+    Notification.count(),
+    Notification.count({ where: { is_read: false } }),
+  ]);
+
+  const totalCoins = (await User.sum("coins")) || 0;
+  const totalGems = (await User.sum("gems")) || 0;
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        users: {
+          total: totalUsers,
+          admins: totalAdmins,
+          banned: bannedUsers,
+          active_today: activeToday,
+          active_week: activeWeek,
+        },
+        world: {
+          total_tiles: totalTerritories,
+          owned: ownedTerritories,
+          unowned: totalTerritories - ownedTerritories,
+          ownership_pct: totalTerritories > 0 ? Math.round((ownedTerritories / totalTerritories) * 100) : 0,
+        },
+        economy: {
+          total_coins_in_circulation: Number(totalCoins),
+          total_gems_in_circulation: Number(totalGems),
+        },
+        gameplay: {
+          businesses: totalBusinesses,
+          army_units: Number(totalArmies) || 0,
+          battles_total: totalBattles,
+          territories_captured: capturedBattles,
+        },
+        content: {
+          missions_total: totalMissions,
+          missions_active: activeMissions,
+        },
+        notifications: {
+          total: totalNotifications,
+          unread: unreadNotifications,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      "OK"
+    )
+  );
 });
 
 // ============ AUDIT LOG ============

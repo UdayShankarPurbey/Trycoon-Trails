@@ -217,6 +217,17 @@ router.post("/players/:id/role", A.updatePlayerRole);
 
 /**
  * @openapi
+ * /api/v1/admin/stats:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Game-wide stats (users, world, economy, gameplay)
+ *     responses:
+ *       200: { description: Stats }
+ */
+router.get("/stats", A.stats);
+
+/**
+ * @openapi
  * /api/v1/admin/audit-log:
  *   get:
  *     tags: [Admin]

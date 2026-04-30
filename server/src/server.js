@@ -12,6 +12,7 @@ import { seedBusinessTypes } from "./db/seedBusinessTypes.js";
 import { seedUnitTypes } from "./db/seedUnitTypes.js";
 import { seedMissions } from "./db/seedMissions.js";
 import { startIncomeTick, stopIncomeTick } from "./jobs/incomeTick.job.js";
+import { rebuildAll as rebuildLeaderboards } from "./services/leaderboard.service.js";
 import { logger } from "./utils/logger.js";
 
 let server;
@@ -27,6 +28,7 @@ const start = async () => {
     await seedMissions();
     await seedWorld();
     await seedAdmin();
+    await rebuildLeaderboards();
 
     server = http.createServer(app);
 
