@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { ApiErrorBody, ApiResponse } from '../types';
 
 export interface RequestOptions {
-  params?: Record<string, string | number | boolean | null | undefined>;
+  params?: object;
   context?: HttpContext;
   withCredentials?: boolean;
 }
@@ -22,10 +22,10 @@ export class ApiError extends Error {
   }
 }
 
-const buildParams = (input?: RequestOptions['params']): HttpParams => {
+const buildParams = (input?: object): HttpParams => {
   let params = new HttpParams();
   if (!input) return params;
-  for (const [key, value] of Object.entries(input)) {
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
     if (value === undefined || value === null) continue;
     params = params.set(key, String(value));
   }

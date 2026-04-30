@@ -1,21 +1,43 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
-import { CardComponent } from '../../shared/ui/card/card';
-import { ResourceBarComponent } from '../../shared/ui/resource-bar/resource-bar';
+import { ActiveMissionsCardComponent } from './components/active-missions-card';
+import { DailyRewardCardComponent } from './components/daily-reward-card';
+import { LevelProgressCardComponent } from './components/level-progress-card';
+import { RecentBattlesCardComponent } from './components/recent-battles-card';
+import { RecentTransactionsCardComponent } from './components/recent-transactions-card';
+import { StatsGridComponent } from './components/stats-grid';
 
 @Component({
   selector: 'tt-dashboard',
-  imports: [CardComponent, ResourceBarComponent],
+  imports: [
+    LevelProgressCardComponent,
+    StatsGridComponent,
+    DailyRewardCardComponent,
+    ActiveMissionsCardComponent,
+    RecentBattlesCardComponent,
+    RecentTransactionsCardComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-4">
-      <div>
-        <h2 class="text-2xl font-semibold">Welcome, {{ user()?.username }}</h2>
-        <p class="text-sm text-zinc-400">Section F3 will replace this dashboard with stats, missions snapshot, and recent activity.</p>
+    <div class="space-y-4 max-w-6xl">
+      <header>
+        <h2 class="text-xl font-semibold">Welcome back, {{ user()?.username }}</h2>
+        <p class="text-sm text-zinc-400">Your empire at a glance.</p>
+      </header>
+
+      <tt-stats-grid />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <tt-level-progress-card />
+        <tt-daily-reward-card />
       </div>
-      <tt-card title="Your resources">
-        <tt-resource-bar [user]="user()" />
-      </tt-card>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <tt-active-missions-card />
+        <tt-recent-battles-card />
+      </div>
+
+      <tt-recent-transactions-card [limit]="10" />
     </div>
   `,
 })
