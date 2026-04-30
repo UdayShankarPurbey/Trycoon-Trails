@@ -11,6 +11,7 @@ import { listMyTransactions } from "../controllers/transaction.controller.js";
 import { getMyTerritories } from "../controllers/world.controller.js";
 import { myBusinesses } from "../controllers/business.controller.js";
 import { myArmy } from "../controllers/army.controller.js";
+import { myBattles } from "../controllers/combat.controller.js";
 
 const router = Router();
 
@@ -143,5 +144,23 @@ router.get("/me/businesses", myBusinesses);
  *       401: { $ref: '#/components/responses/Unauthorized' }
  */
 router.get("/me/army", myArmy);
+
+/**
+ * @openapi
+ * /api/v1/users/me/battles:
+ *   get:
+ *     tags: [User, Battle]
+ *     summary: Battle history (as attacker or defender)
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 50, maximum: 200 }
+ *       - in: query
+ *         name: offset
+ *         schema: { type: integer, default: 0 }
+ *     responses:
+ *       200: { description: My battles }
+ */
+router.get("/me/battles", myBattles);
 
 export { router as userRoutes };

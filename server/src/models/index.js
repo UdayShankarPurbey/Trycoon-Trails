@@ -7,6 +7,7 @@ import { BusinessType } from "./BusinessType.js";
 import { Business } from "./Business.js";
 import { UnitType } from "./UnitType.js";
 import { Army } from "./Army.js";
+import { Battle } from "./Battle.js";
 import { logger } from "../utils/logger.js";
 
 User.hasMany(Transaction, { foreignKey: "user_id", as: "transactions", onDelete: "CASCADE" });
@@ -30,7 +31,15 @@ Army.belongsTo(Territory, { foreignKey: "territory_id", as: "territory" });
 UnitType.hasMany(Army, { foreignKey: "unit_type_id", as: "instances" });
 Army.belongsTo(UnitType, { foreignKey: "unit_type_id", as: "unit_type" });
 
-export const models = { User, Level, Transaction, Territory, BusinessType, Business, UnitType, Army };
+User.hasMany(Battle, { foreignKey: "attacker_id", as: "attackingBattles" });
+User.hasMany(Battle, { foreignKey: "defender_id", as: "defendingBattles" });
+Battle.belongsTo(User, { foreignKey: "attacker_id", as: "attacker" });
+Battle.belongsTo(User, { foreignKey: "defender_id", as: "defender" });
+
+Territory.hasMany(Battle, { foreignKey: "territory_id", as: "battles" });
+Battle.belongsTo(Territory, { foreignKey: "territory_id", as: "territory" });
+
+export const models = { User, Level, Transaction, Territory, BusinessType, Business, UnitType, Army, Battle };
 
 export const syncDB = async ({ alter = false, force = false } = {}) => {
   await sequelize.sync({ alter, force });
@@ -47,4 +56,5 @@ export {
   Business,
   UnitType,
   Army,
+  Battle,
 };
