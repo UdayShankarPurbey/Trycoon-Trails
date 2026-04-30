@@ -1,21 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
-import { LucideAngularModule, Building2, ArrowUpRight, Coins } from 'lucide-angular';
+import { LucideAngularModule, Building2 } from 'lucide-angular';
 import { ApiError } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { BusinessService } from '../../../core/services/business.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { MyBusiness } from '../../../core/types';
-import { BadgeComponent } from '../../../shared/ui/badge/badge';
 import { ButtonComponent } from '../../../shared/ui/button/button';
 import { CardComponent } from '../../../shared/ui/card/card';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state';
-import { FormatNumberPipe } from '../../../shared/pipes/format-number.pipe';
+import { BusinessRowAction, BusinessRowComponent } from '../../businesses/components/business-row';
 
 @Component({
   selector: 'tt-territory-businesses-list',
   imports: [
-    CardComponent, EmptyStateComponent, BadgeComponent, ButtonComponent,
-    LucideAngularModule, FormatNumberPipe,
+    CardComponent, EmptyStateComponent, ButtonComponent, LucideAngularModule,
+    BusinessRowComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -33,35 +32,11 @@ import { FormatNumberPipe } from '../../../shared/pipes/format-number.pipe';
       } @else {
         <ul class="space-y-2">
           @for (b of businesses(); track b.id) {
-            <li class="flex items-center justify-between gap-3 p-2.5 rounded-md border border-zinc-800">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <p class="text-sm font-medium">{{ b.type.name }}</p>
-                  <tt-badge variant="default">L{{ b.level }}/{{ b.type.max_level }}</tt-badge>
-                </div>
-                <p class="text-[11px] text-zinc-500">
-                  +{{ b.income.per_minute | ttFormatNumber }}/min · uncollected
-                  <span class="text-amber-300">{{ b.income.uncollected | ttFormatNumber }}c</span>
-                </p>
-              </div>
-              @if (canManage()) {
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <tt-button size="sm" variant="ghost" [loading]="actingId() === 'collect:' + b.id" (clicked)="collect(b)">
-                    <lucide-angular [img]="Coins" [size]="14" />
-                    Collect
-                  </tt-button>
-                  <tt-button
-                    size="sm"
-                    variant="secondary"
-                    [disabled]="b.level >= b.type.max_level"
-                    [loading]="actingId() === 'upgrade:' + b.id"
-                    (clicked)="upgrade(b)">
-                    <lucide-angular [img]="ArrowUpRight" [size]="14" />
-                    {{ b.upgrade_cost | ttFormatNumber }}c
-                  </tt-button>
-                </div>
-              }
-            </li>
+            <tt-business-row
+              [business]="b"
+              [canManage]="canManage()"
+              [loadingAction]="loadingFor(b.id)"
+              (actionTriggered)="onAction(b, $event)" />
           }
         </ul>
       }
@@ -81,10 +56,9 @@ export class TerritoryBusinessesListComponent {
   readonly changed = output<void>();
 
   protected readonly Building2 = Building2;
-  protected readonly ArrowUpRight = ArrowUpRight;
-  protected readonly Coins = Coins;
 
   protected readonly actingId = signal<string | null>(null);
+  protected readonly actingKind = signal<BusinessRowAction | null>(null);
 
   protected readonly capacityLabel = computed(
     () => `${this.businesses().length}/${this.capacity()} slots used`,
@@ -94,38 +68,36 @@ export class TerritoryBusinessesListComponent {
     return this.businesses().length >= this.capacity();
   }
 
-  protected collect(b: MyBusiness): void {
-    if (this.actingId()) return;
-    this.actingId.set(`collect:${b.id}`);
-    this.businessService.collect(b.id).subscribe({
-      next: (res) => {
-        this.actingId.set(null);
-        const u = this.auth.user();
-        if (u) this.auth.setUser({ ...u, coins: res.balances.coins });
-        this.toast.success('Collected', `+${res.earned} coins`);
-        this.changed.emit();
-      },
-      error: (err: ApiError) => {
-        this.actingId.set(null);
-        this.toast.error('Collect failed', err.message);
-      },
-    });
+  protected loadingFor(id: string): BusinessRowAction | null {
+    return this.actingId() === id ? this.actingKind() : null;
   }
 
-  protected upgrade(b: MyBusiness): void {
+  protected onAction(b: MyBusiness, action: BusinessRowAction): void {
     if (this.actingId()) return;
-    this.actingId.set(`upgrade:${b.id}`);
-    this.businessService.upgrade(b.id).subscribe({
-      next: () => {
+    this.actingId.set(b.id);
+    this.actingKind.set(action);
+    const obs = action === 'collect'
+      ? this.businessService.collect(b.id)
+      : this.businessService.upgrade(b.id);
+    obs.subscribe({
+      next: (res) => {
         this.actingId.set(null);
+        this.actingKind.set(null);
         const u = this.auth.user();
-        if (u) this.auth.setUser({ ...u, coins: Number(u.coins) - Number(b.upgrade_cost) });
-        this.toast.success(`${b.type.name} upgraded`, `Now level ${b.level + 1}`);
+        if (u && action === 'collect') {
+          const r = res as { balances: { coins: number } };
+          this.auth.setUser({ ...u, coins: r.balances.coins });
+          this.toast.success('Collected', `+${(r as unknown as { earned: number }).earned} coins`);
+        } else if (u && action === 'upgrade') {
+          this.auth.setUser({ ...u, coins: Number(u.coins) - Number(b.upgrade_cost) });
+          this.toast.success(`${b.type.name} upgraded`, `Now level ${b.level + 1}`);
+        }
         this.changed.emit();
       },
       error: (err: ApiError) => {
         this.actingId.set(null);
-        this.toast.error('Upgrade failed', err.message);
+        this.actingKind.set(null);
+        this.toast.error(action === 'collect' ? 'Collect failed' : 'Upgrade failed', err.message);
       },
     });
   }

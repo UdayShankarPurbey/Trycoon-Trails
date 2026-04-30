@@ -25,11 +25,7 @@ export const routes: Routes = [
         path: 'world/:id',
         loadComponent: () => import('./features/world/territory-detail'),
       },
-      {
-        path: 'businesses',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'Businesses', description: 'Section F6 — buy / upgrade / collect.' },
-      },
+      { path: 'businesses', loadComponent: () => import('./features/businesses/businesses') },
       {
         path: 'army',
         loadComponent: () => import('./features/placeholder/placeholder'),
