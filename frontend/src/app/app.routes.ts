@@ -27,6 +27,11 @@ export const routes: Routes = [
       },
       { path: 'businesses', loadComponent: () => import('./features/businesses/businesses') },
       { path: 'army', loadComponent: () => import('./features/army/army') },
+      { path: 'battles', loadComponent: () => import('./features/battles/battles') },
+      {
+        path: 'battles/:id',
+        loadComponent: () => import('./features/battles/battle-detail'),
+      },
       {
         path: 'missions',
         loadComponent: () => import('./features/placeholder/placeholder'),
