@@ -32,21 +32,9 @@ export const routes: Routes = [
         path: 'battles/:id',
         loadComponent: () => import('./features/battles/battle-detail'),
       },
-      {
-        path: 'missions',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'Missions', description: 'Section F9 — daily / story / achievements.' },
-      },
-      {
-        path: 'leaderboards',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'Leaderboards', description: 'Section F9 — top players by metric.' },
-      },
-      {
-        path: 'notifications',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'Notifications', description: 'Section F9 — inbox.' },
-      },
+      { path: 'missions', loadComponent: () => import('./features/missions/missions') },
+      { path: 'leaderboards', loadComponent: () => import('./features/leaderboards/leaderboards') },
+      { path: 'notifications', loadComponent: () => import('./features/notifications/notifications') },
       {
         path: 'profile',
         loadComponent: () => import('./features/placeholder/placeholder'),

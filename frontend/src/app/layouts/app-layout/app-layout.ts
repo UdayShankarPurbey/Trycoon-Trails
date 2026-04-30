@@ -17,6 +17,7 @@ import {
   Castle,
 } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ResourceBarComponent } from '../../shared/ui/resource-bar/resource-bar';
 
@@ -89,7 +90,20 @@ interface NavItem {
               </span>
             }
           </div>
-          <tt-resource-bar [user]="user()" [compact]="true" />
+          <div class="flex items-center gap-3">
+            <a
+              routerLink="/notifications"
+              class="relative inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-zinc-800 text-zinc-300"
+              [attr.aria-label]="'Notifications' + (unread() > 0 ? ' (' + unread() + ' unread)' : '')">
+              <lucide-angular [img]="Bell" [size]="16" />
+              @if (unread() > 0) {
+                <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-amber-500 text-zinc-950 text-[10px] font-semibold">
+                  {{ unread() > 99 ? '99+' : unread() }}
+                </span>
+              }
+            </a>
+            <tt-resource-bar [user]="user()" [compact]="true" />
+          </div>
         </header>
         <main class="flex-1 overflow-y-auto p-4 md:p-6">
           <router-outlet />
@@ -100,11 +114,13 @@ interface NavItem {
 })
 export class AppLayoutComponent {
   private readonly auth = inject(AuthService);
+  private readonly notifService = inject(NotificationService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
   protected readonly user = this.auth.user;
   protected readonly isAdmin = this.auth.isAdmin;
+  protected readonly unread = this.notifService.unread;
 
   protected readonly sidebarOpen = signal(true);
 
@@ -112,6 +128,11 @@ export class AppLayoutComponent {
   protected readonly Castle = Castle;
   protected readonly ShieldCheck = ShieldCheck;
   protected readonly LogOut = LogOut;
+  protected readonly Bell = Bell;
+
+  constructor() {
+    this.notifService.refreshUnread();
+  }
 
   private readonly nav: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
