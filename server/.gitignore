@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+logs/
+*.log
+public/temp/*
+!public/temp/.gitkeep
+.DS_Store
+.vscode/
+.idea/
+coverage/
+dist/
