@@ -4,6 +4,8 @@ import { env } from "./config/env.js";
 import { app } from "./app.js";
 import { connectDB, disconnectDB } from "./config/db.js";
 import { connectRedis, disconnectRedis } from "./config/redis.js";
+import { syncDB } from "./models/index.js";
+import { seedAdmin } from "./db/seedAdmin.js";
 import { logger } from "./utils/logger.js";
 
 let server;
@@ -12,6 +14,8 @@ const start = async () => {
   try {
     await connectDB();
     await connectRedis();
+    await syncDB({ alter: env.isDev });
+    await seedAdmin();
 
     server = http.createServer(app);
 

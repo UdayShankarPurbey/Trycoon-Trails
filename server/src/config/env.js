@@ -77,4 +77,17 @@ export const env = Object.freeze({
     windowMs: toInt(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     max: toInt(process.env.RATE_LIMIT_MAX, 200),
   },
+
+  admin: {
+    username: process.env.ADMIN_USERNAME || "admin",
+    email: process.env.ADMIN_EMAIL || "admin@trycoon.local",
+    password: process.env.ADMIN_PASSWORD || "ChangeMe@123",
+  },
+
+  starter: {
+    coins: toInt(process.env.STARTER_COINS, 1000),
+    gems: toInt(process.env.STARTER_GEMS, 50),
+    manpower: toInt(process.env.STARTER_MANPOWER, 100),
+    shieldDays: toInt(process.env.SHIELD_DAYS, 7),
+  },
 });

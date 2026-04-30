@@ -15,6 +15,7 @@ import { logger, morganStream } from "./utils/logger.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 import { notFoundHandler, errorHandler } from "./middleware/error.middleware.js";
+import { apiV1Router } from "./routes/index.js";
 
 const app = express();
 
@@ -129,6 +130,8 @@ app.get(
 app.get("/", (_req, res) => {
   res.json(new ApiResponse(200, { name: "Trycoon Trails API", version: "0.1.0", docs: "/api-docs" }, "Welcome"));
 });
+
+app.use("/api/v1", apiV1Router);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
