@@ -35,11 +35,7 @@ export const routes: Routes = [
       { path: 'missions', loadComponent: () => import('./features/missions/missions') },
       { path: 'leaderboards', loadComponent: () => import('./features/leaderboards/leaderboards') },
       { path: 'notifications', loadComponent: () => import('./features/notifications/notifications') },
-      {
-        path: 'profile',
-        loadComponent: () => import('./features/placeholder/placeholder'),
-        data: { title: 'Profile', description: 'Section F2/F3 — avatar, password, account settings.' },
-      },
+      { path: 'profile', loadComponent: () => import('./features/profile/profile') },
       {
         path: 'admin',
         canActivate: [adminGuard],
