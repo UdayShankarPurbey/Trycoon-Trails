@@ -32,7 +32,7 @@ import { TimeAgoPipe } from '../../../shared/pipes/time-ago.pipe';
             <p class="text-[11px] text-zinc-500 mt-1">3–32 chars, letters / digits / underscore.</p>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
               <p class="text-[11px] uppercase tracking-wide text-zinc-500">Email</p>
               <p class="text-zinc-200">{{ u.email }}</p>

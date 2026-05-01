@@ -31,7 +31,7 @@ import { ownershipOf } from './world-utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-4 max-w-5xl">
-      <header class="flex items-center justify-between gap-3">
+      <header class="flex items-center justify-between gap-3 flex-wrap">
         <a
           routerLink="/world"
           class="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100">
@@ -67,7 +67,7 @@ import { ownershipOf } from './world-utils';
           <p class="text-sm text-red-300">Failed to load territory.</p>
         </tt-card>
       } @else if (data.value(); as d) {
-        <div class="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 items-start">
           <div class="space-y-4 min-w-0">
             <tt-territory-businesses-list
               [businesses]="d.businesses"

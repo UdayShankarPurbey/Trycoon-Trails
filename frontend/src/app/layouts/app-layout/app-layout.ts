@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import {
   LucideAngularModule,
   LayoutDashboard,
@@ -14,6 +15,7 @@ import {
   LogOut,
   ShieldCheck,
   Menu,
+  X,
   Castle,
 } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
@@ -34,20 +36,36 @@ interface NavItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen flex bg-zinc-950 text-zinc-100">
-      <aside
-        [class]="'shrink-0 border-r border-zinc-800 bg-zinc-900 flex flex-col transition-all '
-          + (sidebarOpen() ? 'w-60' : 'w-16')">
-        <div class="h-14 px-3 flex items-center gap-2 border-b border-zinc-800">
+      @if (mobileOpen()) {
+        <button
+          type="button"
+          (click)="closeMobile()"
+          class="lg:hidden fixed inset-0 bg-black/60 z-30"
+          aria-label="Close menu">
+        </button>
+      }
+
+      <aside [class]="sidebarClass()">
+        <div class="h-14 px-3 flex items-center justify-between gap-2 border-b border-zinc-800">
+          <div class="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              (click)="toggleDesktop()"
+              class="hidden lg:inline-flex p-2 rounded hover:bg-zinc-800 text-zinc-300"
+              [attr.aria-label]="desktopExpanded() ? 'Collapse sidebar' : 'Expand sidebar'">
+              <lucide-angular [img]="Menu" [size]="18" />
+            </button>
+            @if (showLabels()) {
+              <span class="font-semibold text-amber-400 truncate">Trycoon Trails</span>
+            }
+          </div>
           <button
             type="button"
-            (click)="toggleSidebar()"
-            class="p-2 rounded hover:bg-zinc-800 text-zinc-300"
-            [attr.aria-label]="sidebarOpen() ? 'Collapse sidebar' : 'Expand sidebar'">
-            <lucide-angular [img]="Menu" [size]="18" />
+            (click)="closeMobile()"
+            class="lg:hidden p-2 rounded hover:bg-zinc-800 text-zinc-300"
+            aria-label="Close menu">
+            <lucide-angular [img]="X" [size]="18" />
           </button>
-          @if (sidebarOpen()) {
-            <span class="font-semibold text-amber-400 truncate">Trycoon</span>
-          }
         </div>
         <nav class="flex-1 overflow-y-auto py-3">
           <ul class="space-y-0.5 px-2">
@@ -57,9 +75,10 @@ interface NavItem {
                   [routerLink]="item.path"
                   routerLinkActive="bg-amber-500/15 text-amber-300 border-amber-500/30"
                   [routerLinkActiveOptions]="{ exact: false }"
+                  (click)="closeMobile()"
                   class="flex items-center gap-3 px-3 h-10 rounded-md text-sm text-zinc-300 hover:bg-zinc-800 border border-transparent">
                   <lucide-angular [img]="item.icon" [size]="18" />
-                  @if (sidebarOpen()) {
+                  @if (showLabels()) {
                     <span class="truncate">{{ item.label }}</span>
                   }
                 </a>
@@ -73,27 +92,34 @@ interface NavItem {
             (click)="logout()"
             class="w-full flex items-center gap-3 px-3 h-10 rounded-md text-sm text-zinc-300 hover:bg-zinc-800">
             <lucide-angular [img]="LogOut" [size]="18" />
-            @if (sidebarOpen()) { <span>Logout</span> }
+            @if (showLabels()) { <span>Logout</span> }
           </button>
         </div>
       </aside>
 
       <div class="flex-1 flex flex-col min-w-0">
-        <header class="h-14 px-4 flex items-center justify-between border-b border-zinc-800 bg-zinc-900/60 backdrop-blur">
-          <div class="flex items-center gap-2 text-sm text-zinc-300">
-            <lucide-angular [img]="Castle" [size]="16" class="text-amber-400" />
-            <span class="font-medium">{{ user()?.username }}</span>
+        <header class="h-14 px-3 sm:px-4 flex items-center justify-between gap-2 border-b border-zinc-800 bg-zinc-900/60 backdrop-blur">
+          <div class="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              (click)="openMobile()"
+              class="lg:hidden -ml-1 p-2 rounded hover:bg-zinc-800 text-zinc-300"
+              aria-label="Open menu">
+              <lucide-angular [img]="Menu" [size]="18" />
+            </button>
+            <lucide-angular [img]="Castle" [size]="16" class="text-amber-400 hidden sm:block shrink-0" />
+            <span class="font-medium text-sm truncate">{{ user()?.username }}</span>
             @if (user()?.role === 'admin') {
-              <span class="ml-1 inline-flex items-center gap-1 text-xs text-amber-300 bg-amber-500/15 border border-amber-600/40 px-2 py-0.5 rounded-full">
+              <span class="hidden sm:inline-flex items-center gap-1 text-xs text-amber-300 bg-amber-500/15 border border-amber-600/40 px-2 py-0.5 rounded-full">
                 <lucide-angular [img]="ShieldCheck" [size]="12" />
                 admin
               </span>
             }
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
             <a
               routerLink="/notifications"
-              class="relative inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-zinc-800 text-zinc-300"
+              class="relative shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-zinc-800 text-zinc-300"
               [attr.aria-label]="'Notifications' + (unread() > 0 ? ' (' + unread() + ' unread)' : '')">
               <lucide-angular [img]="Bell" [size]="16" />
               @if (unread() > 0) {
@@ -105,7 +131,7 @@ interface NavItem {
             <tt-resource-bar [user]="user()" [compact]="true" />
           </div>
         </header>
-        <main class="flex-1 overflow-y-auto p-4 md:p-6">
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
           <router-outlet />
         </main>
       </div>
@@ -122,16 +148,34 @@ export class AppLayoutComponent {
   protected readonly isAdmin = this.auth.isAdmin;
   protected readonly unread = this.notifService.unread;
 
-  protected readonly sidebarOpen = signal(true);
+  protected readonly mobileOpen = signal(false);
+  protected readonly desktopExpanded = signal(true);
 
   protected readonly Menu = Menu;
+  protected readonly X = X;
   protected readonly Castle = Castle;
   protected readonly ShieldCheck = ShieldCheck;
   protected readonly LogOut = LogOut;
   protected readonly Bell = Bell;
 
+  protected readonly showLabels = computed(() => this.mobileOpen() || this.desktopExpanded());
+
+  protected readonly sidebarClass = computed(() => {
+    const parts = [
+      'fixed inset-y-0 left-0 z-40 w-64 shrink-0 border-r border-zinc-800 bg-zinc-900 flex flex-col',
+      'transform transition-transform duration-200',
+      this.mobileOpen() ? 'translate-x-0' : '-translate-x-full',
+      'lg:relative lg:translate-x-0 lg:transition-[width]',
+      this.desktopExpanded() ? 'lg:w-60' : 'lg:w-16',
+    ];
+    return parts.join(' ');
+  });
+
   constructor() {
     this.notifService.refreshUnread();
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.closeMobile());
   }
 
   private readonly nav: NavItem[] = [
@@ -151,8 +195,16 @@ export class AppLayoutComponent {
     this.nav.filter((i) => !i.adminOnly || this.isAdmin()),
   );
 
-  protected toggleSidebar(): void {
-    this.sidebarOpen.update((v) => !v);
+  protected toggleDesktop(): void {
+    this.desktopExpanded.update((v) => !v);
+  }
+
+  protected openMobile(): void {
+    this.mobileOpen.set(true);
+  }
+
+  protected closeMobile(): void {
+    this.mobileOpen.set(false);
   }
 
   protected logout(): void {

@@ -26,7 +26,7 @@ interface SideRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-4 max-w-4xl">
-      <header class="flex items-center justify-between gap-3">
+      <header class="flex items-center justify-between gap-3 flex-wrap">
         <a
           routerLink="/battles"
           class="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100">

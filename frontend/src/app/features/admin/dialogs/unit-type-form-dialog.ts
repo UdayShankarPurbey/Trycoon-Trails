@@ -16,7 +16,7 @@ const INPUT = 'w-full h-9 px-2 rounded bg-zinc-950 border border-zinc-800 text-s
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tt-dialog-shell [title]="data.type ? 'Edit unit type' : 'Create unit type'">
-      <form [formGroup]="form" class="grid grid-cols-2 gap-3">
+      <form [formGroup]="form" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-medium text-zinc-300 mb-1">Code</label>
           <input type="text" formControlName="code" [class]="input" [readonly]="!!data.type" />

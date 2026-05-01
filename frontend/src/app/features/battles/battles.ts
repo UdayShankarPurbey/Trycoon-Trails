@@ -31,7 +31,7 @@ const FILTERS: { value: BattleFilter; label: string }[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-4 max-w-4xl">
-      <header class="flex items-center justify-between gap-3">
+      <header class="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 class="text-xl font-semibold">Battles</h2>
           <p class="text-sm text-zinc-400">Your full combat history.</p>

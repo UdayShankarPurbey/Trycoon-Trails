@@ -33,7 +33,7 @@ import { TerritorySlots, TerritorySlotsCardComponent } from './components/territ
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-4 max-w-6xl">
-      <header class="flex items-center justify-between gap-3">
+      <header class="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 class="text-xl font-semibold">Businesses</h2>
           <p class="text-sm text-zinc-400">All your businesses across every territory.</p>

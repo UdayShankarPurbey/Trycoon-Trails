@@ -81,7 +81,7 @@ interface AttackDialogData {
               <h4 class="text-base font-semibold text-red-300">Defeated</h4>
             }
           </div>
-          <div class="grid grid-cols-2 gap-2 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
             <div class="rounded-md border border-zinc-800 p-3">
               <p class="text-[11px] uppercase tracking-wide text-zinc-500 mb-1">Attacker</p>
               <p>Strength: <span class="tabular-nums">{{ r.attacker.strength }}</span></p>
